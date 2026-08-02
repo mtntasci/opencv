@@ -153,7 +153,7 @@ function PuzzleScreen({
           <span className="ml-2 font-mono text-sm text-slate-400">terminal // hazal_sarikaya</span>
         </div>
 
-        <h1 className="text-xl font-medium mb-6 text-slate-500 uppercase tracking-wide">
+        <h1 className="text-xl font-medium mb-6 text-slate-500 tracking-wide">
           Benimle çalışmak ister misiniz ?
         </h1>
 
