@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc; /* bg-slate-50 */
+  --foreground: #0f172a; /* text-slate-900 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased min-h-screen selection:bg-indigo-100 selection:text-indigo-900;
+  }
+}
