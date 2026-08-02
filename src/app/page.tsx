@@ -73,7 +73,7 @@ export default function Home() {
 
 // --- COUNTDOWN POPUP COMPONENT ---
 function CountdownPopup({ message, onClose }: { message: string, onClose: () => void }) {
-  const [timeLeft, setTimeLeft] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(3);
 
   useEffect(() => {
     if (timeLeft <= 0) {
