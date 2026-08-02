@@ -16,10 +16,8 @@ export default function Home() {
   const [popup, setPopup] = useState<{ message: string, id: number } | null>(null);
 
   const showPopupMessage = (msg: string) => {
+    // Only show one popup at a time, or replace current
     setPopup({ message: msg, id: Date.now() });
-    setTimeout(() => {
-      setPopup((prev) => (prev?.id === prev?.id ? null : prev));
-    }, 4000);
   };
 
   const handleCorrectAnswer = () => {
@@ -62,22 +60,55 @@ export default function Home() {
       {/* Center Popup Notification */}
       <AnimatePresence>
         {popup && (
-          <motion.div
-            key={popup.id}
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="fixed inset-0 pointer-events-none flex items-center justify-center z-50 px-4"
-          >
-            <div className="bg-slate-900/95 backdrop-blur-md text-white px-8 py-6 rounded-2xl shadow-2xl max-w-md w-full text-center border border-slate-700/50 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-50"></div>
-              <Terminal className="w-6 h-6 text-indigo-400 mx-auto mb-3" />
-              <p className="font-medium text-lg leading-relaxed text-slate-100">{popup.message}</p>
-            </div>
-          </motion.div>
+          <CountdownPopup 
+            key={popup.id} 
+            message={popup.message} 
+            onClose={() => setPopup(null)} 
+          />
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+// --- COUNTDOWN POPUP COMPONENT ---
+function CountdownPopup({ message, onClose }: { message: string, onClose: () => void }) {
+  const [timeLeft, setTimeLeft] = useState(5);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      onClose();
+      return;
+    }
+    const timer = setTimeout(() => {
+      setTimeLeft((t) => t - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 flex items-center justify-center z-50 px-4 bg-slate-100/40 backdrop-blur-md"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 10 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 10 }}
+        className="bg-slate-900/95 text-white px-8 py-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-slate-700/50 relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-50"></div>
+        <Terminal className="w-6 h-6 text-indigo-400 mx-auto mb-4" />
+        <p className="font-medium text-lg leading-relaxed text-slate-100 mb-4">{message}</p>
+        
+        {/* Countdown Timer */}
+        <div className="absolute bottom-3 right-4 text-slate-400 font-mono font-bold text-sm">
+          {timeLeft}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -97,14 +128,13 @@ function PuzzleScreen({
     "Çıkan sonuç, aradığın bir sayfayı bulamadığında karşına çıkan hatadır."
   ];
 
-  const [activeHint, setActiveHint] = useState<number | null>(null);
+  const [activeHints, setActiveHints] = useState<number[]>([]);
 
   const handleHintClick = (index: number) => {
-    setActiveHint(index);
-    onShowHint(`İpucu ${index + 1}: ${hints[index]}`);
-    setTimeout(() => {
-      setActiveHint((prev) => (prev === index ? null : prev));
-    }, 4000);
+    if (!activeHints.includes(index)) {
+      setActiveHints((prev) => [...prev, index]);
+    }
+    onShowHint(hints[index]);
   };
 
   return (
@@ -128,26 +158,26 @@ function PuzzleScreen({
         </h1>
         
         <div className="prose prose-slate mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 font-medium text-slate-700 leading-relaxed text-lg">
-          Bir e-ticaret projesinin backend'ini bir Senior Developer tek başına Go kullanarak saatte 150 satır kod yazarak doldurabiliyor. Mid-Level Developer ise saatte 100 satır kod ekleyebiliyor. Ancak stajyer, sürekli hatalı commit'ler atarak sisteme saatte 48 satırlık teknik borç ekliyor ve bu kodların silinmesi gerekiyor. Bu üçlü aynı anda projeye oturup tam 2 saat boyunca çalışırlarsa, ortaya çıkan net kod satırı sayısı hangi HTTP durum koduna eşit olur?
+          <strong className="font-bold text-slate-900">Mat.1.</strong> Bir e-ticaret projesinin backend'ini bir Senior Developer tek başına Go kullanarak saatte 150 satır kod yazarak doldurabiliyor. Mid-Level Developer ise saatte 100 satır kod ekleyebiliyor. Ancak stajyer, sürekli hatalı commit'ler atarak sisteme saatte 48 satırlık teknik borç ekliyor ve bu kodların silinmesi gerekiyor. Bu üçlü aynı anda projeye oturup tam 2 saat boyunca çalışırlarsa, ortaya çıkan net kod satırı sayısı hangi HTTP durum koduna eşit olur?
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <button 
-            onClick={() => onWrongAnswer('Fazla iyimsersin, stajyerin kodlarını unuttun.')}
+            onClick={() => onWrongAnswer('Fazla iyimsersiniz, Stajerin kodlarını unuttunuz.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             A) 200 OK
           </button>
           
           <button 
-            onClick={() => onWrongAnswer('Çay molası bitti, koda dön!')}
+            onClick={() => onWrongAnswer('Çay molası bitti, Çalışmaya devam.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             B) 418 I&apos;m a teapot
           </button>
           
           <button 
-            onClick={() => onWrongAnswer('Sunucu hala ayakta, tekrar hesapla.')}
+            onClick={() => onWrongAnswer('Sunucu çalışıyor. Problemi çözelim.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             C) 500 Internal Server Error
@@ -165,28 +195,25 @@ function PuzzleScreen({
         <div className="flex flex-col items-center">
           <span className="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">İpuçları</span>
           <div className="flex gap-6 justify-center">
-            {hints.map((_, index) => (
-              <button 
-                key={index}
-                onClick={() => handleHintClick(index)}
-                className="group flex flex-col items-center gap-2 focus:outline-none"
-              >
-                <div className={cn(
-                  "p-3 rounded-full transition-all duration-300",
-                  activeHint === index 
-                    ? "bg-yellow-100 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]" 
-                    : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-                )}>
-                  <Lightbulb className="w-6 h-6" />
-                </div>
-                <span className={cn(
-                  "text-xs font-semibold transition-colors duration-300",
-                  activeHint === index ? "text-yellow-600" : "text-slate-400"
-                )}>
-                  İpucu {index + 1}
-                </span>
-              </button>
-            ))}
+            {hints.map((_, index) => {
+              const isActive = activeHints.includes(index);
+              return (
+                <button 
+                  key={index}
+                  onClick={() => handleHintClick(index)}
+                  className="group flex flex-col items-center gap-2 focus:outline-none"
+                >
+                  <div className={cn(
+                    "p-3 rounded-full transition-all duration-300",
+                    isActive 
+                      ? "bg-yellow-100 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]" 
+                      : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                  )}>
+                    <Lightbulb className={cn("w-6 h-6", isActive && "fill-yellow-500")} />
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
