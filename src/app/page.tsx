@@ -29,21 +29,21 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center font-sans overflow-x-hidden p-4">
       <AnimatePresence mode="wait">
         {status === 'puzzle' && (
-          <PuzzleScreen 
-            key="puzzle" 
-            onWrongAnswer={showPopupMessage} 
-            onCorrectAnswer={handleCorrectAnswer} 
+          <PuzzleScreen
+            key="puzzle"
+            onWrongAnswer={showPopupMessage}
+            onCorrectAnswer={handleCorrectAnswer}
             onShowHint={showPopupMessage}
           />
         )}
-        
+
         {status === 'decrypting' && (
-          <DecryptingScreen 
-            key="decrypting" 
-            onComplete={() => setStatus('cv')} 
+          <DecryptingScreen
+            key="decrypting"
+            onComplete={() => setStatus('cv')}
           />
         )}
-        
+
         {status === 'cv' && (
           <motion.div
             key="cv"
@@ -60,10 +60,10 @@ export default function Home() {
       {/* Center Popup Notification */}
       <AnimatePresence>
         {popup && (
-          <CountdownPopup 
-            key={popup.id} 
-            message={popup.message} 
-            onClose={() => setPopup(null)} 
+          <CountdownPopup
+            key={popup.id}
+            message={popup.message}
+            onClose={() => setPopup(null)}
           />
         )}
       </AnimatePresence>
@@ -102,7 +102,7 @@ function CountdownPopup({ message, onClose }: { message: string, onClose: () => 
         <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-50"></div>
         <Terminal className="w-6 h-6 text-indigo-400 mx-auto mb-4" />
         <p className="font-medium text-lg leading-relaxed text-slate-100 mb-4">{message}</p>
-        
+
         {/* Countdown Timer */}
         <div className="absolute bottom-3 right-4 text-slate-400 font-mono font-bold text-sm">
           {timeLeft}
@@ -113,14 +113,14 @@ function CountdownPopup({ message, onClose }: { message: string, onClose: () => 
 }
 
 // --- PUZZLE SCREEN COMPONENT ---
-function PuzzleScreen({ 
-  onWrongAnswer, 
-  onCorrectAnswer, 
-  onShowHint 
-}: { 
-  onWrongAnswer: (msg: string) => void, 
+function PuzzleScreen({
+  onWrongAnswer,
+  onCorrectAnswer,
+  onShowHint
+}: {
+  onWrongAnswer: (msg: string) => void,
   onCorrectAnswer: () => void,
-  onShowHint: (msg: string) => void 
+  onShowHint: (msg: string) => void
 }) {
   const hints = [
     "Havuza giren kodlar Go ve Mid-Level, havuzu boşaltan ise Stajyer'in teknik borcudur.",
@@ -138,7 +138,7 @@ function PuzzleScreen({
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, filter: "blur(10px)" }}
@@ -150,40 +150,40 @@ function PuzzleScreen({
           <div className="w-3 h-3 rounded-full bg-red-400"></div>
           <div className="w-3 h-3 rounded-full bg-amber-400"></div>
           <div className="w-3 h-3 rounded-full bg-green-400"></div>
-          <span className="ml-2 font-mono text-sm text-slate-400">terminal // auth_required</span>
+          <span className="ml-2 font-mono text-sm text-slate-400">terminal // hazal_sarikaya</span>
         </div>
 
         <h1 className="text-xl font-medium mb-6 text-slate-500 uppercase tracking-wide">
           Benimle çalışmak ister misiniz ?
         </h1>
-        
+
         <div className="prose prose-slate mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 font-medium text-slate-700 leading-relaxed text-lg">
           <strong className="font-bold text-slate-900">Mat.1.</strong> Bir e-ticaret projesinin backend'ini bir Senior Developer tek başına Go kullanarak saatte 150 satır kod yazarak doldurabiliyor. Mid-Level Developer ise saatte 100 satır kod ekleyebiliyor. Ancak stajyer, sürekli hatalı commit'ler atarak sisteme saatte 48 satırlık teknik borç ekliyor ve bu kodların silinmesi gerekiyor. Bu üçlü aynı anda projeye oturup tam 2 saat boyunca çalışırlarsa, ortaya çıkan net kod satırı sayısı hangi HTTP durum koduna eşit olur?
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          <button 
+          <button
             onClick={() => onWrongAnswer('Fazla iyimsersiniz, Stajerin kodlarını unuttunuz.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             A) 200 OK
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onWrongAnswer('Çay molası bitti, Çalışmaya devam.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             B) 418 I&apos;m a teapot
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onWrongAnswer('Sunucu çalışıyor. Problemi çözelim.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
             C) 500 Internal Server Error
           </button>
-          
-          <button 
+
+          <button
             onClick={onCorrectAnswer}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
           >
@@ -198,15 +198,15 @@ function PuzzleScreen({
             {hints.map((_, index) => {
               const isActive = activeHints.includes(index);
               return (
-                <button 
+                <button
                   key={index}
                   onClick={() => handleHintClick(index)}
                   className="group flex flex-col items-center gap-2 focus:outline-none"
                 >
                   <div className={cn(
                     "p-3 rounded-full transition-all duration-300",
-                    isActive 
-                      ? "bg-yellow-100 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]" 
+                    isActive
+                      ? "bg-yellow-100 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"
                       : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
                   )}>
                     <Lightbulb className={cn("w-6 h-6", isActive && "fill-yellow-500")} />
@@ -243,7 +243,7 @@ function DecryptingScreen({ onComplete }: { onComplete: () => void }) {
           Status: 200 OK (Decrypting...)
         </h2>
       </div>
-      
+
       {/* Background Data Flow */}
       <div className="absolute inset-0 opacity-20 pointer-events-none select-none flex overflow-hidden">
         {Array.from({ length: 40 }).map((_, i) => (
@@ -279,9 +279,9 @@ function ScrambleColumn({ delay, speed }: { delay: number, speed: number }) {
     <motion.div
       initial={{ y: '-100%' }}
       animate={{ y: '100%' }}
-      transition={{ 
-        repeat: Infinity, 
-        duration: speed * 3, 
+      transition={{
+        repeat: Infinity,
+        duration: speed * 3,
         ease: "linear",
         delay: delay
       }}
