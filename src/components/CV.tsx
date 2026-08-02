@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import { Mail, MapPin } from 'lucide-react';
 
 const GithubIcon = ({ className }: { className?: string }) => (
@@ -16,13 +19,82 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
 );
 
 export default function CV() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const textNodes: { node: Node; originalText: string }[] = [];
+    
+    const walk = (n: Node) => {
+      if (n.nodeType === Node.TEXT_NODE) {
+        const text = n.textContent || '';
+        if (text.trim().length > 0) {
+          textNodes.push({ node: n, originalText: text });
+        }
+      } else {
+        n.childNodes.forEach(walk);
+      }
+    };
+    
+    walk(containerRef.current);
+    
+    // Initial scramble
+    textNodes.forEach((tn) => {
+      tn.node.textContent = tn.originalText.replace(/\S/g, () => Math.floor(Math.random() * 10).toString());
+    });
+    
+    const totalDuration = 2000; 
+    const start = performance.now();
+    let animationFrameId: number;
+    
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      textNodes.forEach((tn, index) => {
+        const nodeThreshold = (index / textNodes.length) * 0.7; // staggering threshold
+        
+        if (progress >= nodeThreshold) {
+          const nodeProgress = Math.min((progress - nodeThreshold) * 4, 1);
+          
+          let newText = '';
+          for (let i = 0; i < tn.originalText.length; i++) {
+            const char = tn.originalText[i];
+            if (char.trim() === '') {
+              newText += char;
+            } else {
+              if (Math.random() < nodeProgress || nodeProgress === 1) {
+                newText += char;
+              } else {
+                newText += Math.floor(Math.random() * 10).toString();
+              }
+            }
+          }
+          tn.node.textContent = newText;
+        } else {
+          tn.node.textContent = tn.originalText.replace(/\S/g, () => Math.floor(Math.random() * 10).toString());
+        }
+      });
+      
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(tick);
+      } else {
+        textNodes.forEach(tn => { tn.node.textContent = tn.originalText; });
+      }
+    };
+    
+    animationFrameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
   const skills = [
     "Go", "C++", "Shell", "SQL", "Linux Kernel", "Docker", "Kubernetes", "CGO",
     "gRPC", "TCP/UDP Socket Programlama", "Kriptografi", "Low-Level Programlama", "Concurrency"
   ];
 
   return (
-    <div className="max-w-4xl mx-auto p-8 sm:p-12 md:p-16 bg-white shadow-xl rounded-2xl border border-slate-100">
+    <div ref={containerRef} className="max-w-4xl mx-auto p-8 sm:p-12 md:p-16 bg-white shadow-xl rounded-2xl border border-slate-100">
       {/* Header */}
       <header className="border-b border-slate-200 pb-8 mb-10">
         <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight mb-2">Hazal Sarıkaya</h1>

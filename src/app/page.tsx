@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, AlertCircle } from 'lucide-react';
+import { Lightbulb, Terminal } from 'lucide-react';
 import CV from '@/components/CV';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -13,16 +13,18 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 export default function Home() {
   const [status, setStatus] = useState<'puzzle' | 'decrypting' | 'cv'>('puzzle');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [popup, setPopup] = useState<{ message: string, id: number } | null>(null);
 
-  const handleWrongAnswer = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+  const showPopupMessage = (msg: string) => {
+    setPopup({ message: msg, id: Date.now() });
+    setTimeout(() => {
+      setPopup((prev) => (prev?.id === prev?.id ? null : prev));
+    }, 4000);
   };
 
   const handleCorrectAnswer = () => {
     setStatus('decrypting');
-    setToastMessage(null);
+    setPopup(null);
   };
 
   return (
@@ -31,8 +33,9 @@ export default function Home() {
         {status === 'puzzle' && (
           <PuzzleScreen 
             key="puzzle" 
-            onWrongAnswer={handleWrongAnswer} 
+            onWrongAnswer={showPopupMessage} 
             onCorrectAnswer={handleCorrectAnswer} 
+            onShowHint={showPopupMessage}
           />
         )}
         
@@ -46,9 +49,9 @@ export default function Home() {
         {status === 'cv' && (
           <motion.div
             key="cv"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0 }}
             className="w-full py-12"
           >
             <CV />
@@ -56,17 +59,21 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Toast Notification */}
+      {/* Center Popup Notification */}
       <AnimatePresence>
-        {toastMessage && (
+        {popup && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 border border-slate-700"
+            key={popup.id}
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="fixed inset-0 pointer-events-none flex items-center justify-center z-50 px-4"
           >
-            <AlertCircle className="w-5 h-5 text-red-400" />
-            <span className="font-medium">{toastMessage}</span>
+            <div className="bg-slate-900/95 backdrop-blur-md text-white px-8 py-6 rounded-2xl shadow-2xl max-w-md w-full text-center border border-slate-700/50 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 opacity-50"></div>
+              <Terminal className="w-6 h-6 text-indigo-400 mx-auto mb-3" />
+              <p className="font-medium text-lg leading-relaxed text-slate-100">{popup.message}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -75,12 +82,30 @@ export default function Home() {
 }
 
 // --- PUZZLE SCREEN COMPONENT ---
-function PuzzleScreen({ onWrongAnswer, onCorrectAnswer }: { onWrongAnswer: (msg: string) => void, onCorrectAnswer: () => void }) {
+function PuzzleScreen({ 
+  onWrongAnswer, 
+  onCorrectAnswer, 
+  onShowHint 
+}: { 
+  onWrongAnswer: (msg: string) => void, 
+  onCorrectAnswer: () => void,
+  onShowHint: (msg: string) => void 
+}) {
   const hints = [
-    "İpucu 1: Havuza giren kodlar Go ve Mid-Level, havuzu boşaltan ise Stajyer'in teknik borcudur.",
-    "İpucu 2: Denklem (Senior + Mid - Stajyer) * 2 şeklindedir.",
-    "İpucu 3: Çıkan sonuç, aradığın bir sayfayı bulamadığında karşına çıkan hatadır."
+    "Havuza giren kodlar Go ve Mid-Level, havuzu boşaltan ise Stajyer'in teknik borcudur.",
+    "Denklem (Senior + Mid - Stajyer) * 2 şeklindedir.",
+    "Çıkan sonuç, aradığın bir sayfayı bulamadığında karşına çıkan hatadır."
   ];
+
+  const [activeHint, setActiveHint] = useState<number | null>(null);
+
+  const handleHintClick = (index: number) => {
+    setActiveHint(index);
+    onShowHint(`İpucu ${index + 1}: ${hints[index]}`);
+    setTimeout(() => {
+      setActiveHint((prev) => (prev === index ? null : prev));
+    }, 4000);
+  };
 
   return (
     <motion.div 
@@ -98,23 +123,15 @@ function PuzzleScreen({ onWrongAnswer, onCorrectAnswer }: { onWrongAnswer: (msg:
           <span className="ml-2 font-mono text-sm text-slate-400">terminal // auth_required</span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-slate-800 leading-snug">
-          Yetkilendirme Gerekli
+        <h1 className="text-xl font-medium mb-6 text-slate-500 uppercase tracking-wide">
+          Benimle çalışmak ister misiniz ?
         </h1>
         
         <div className="prose prose-slate mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 font-medium text-slate-700 leading-relaxed text-lg">
           Bir e-ticaret projesinin backend'ini bir Senior Developer tek başına Go kullanarak saatte 150 satır kod yazarak doldurabiliyor. Mid-Level Developer ise saatte 100 satır kod ekleyebiliyor. Ancak stajyer, sürekli hatalı commit'ler atarak sisteme saatte 48 satırlık teknik borç ekliyor ve bu kodların silinmesi gerekiyor. Bu üçlü aynı anda projeye oturup tam 2 saat boyunca çalışırlarsa, ortaya çıkan net kod satırı sayısı hangi HTTP durum koduna eşit olur?
         </div>
 
-        <div className="space-y-3 mb-10">
-          {hints.map((hint, index) => (
-            <Accordion key={index} title={`İpucu ${index + 1}`}>
-              {hint.replace(`İpucu ${index + 1}: `, '')}
-            </Accordion>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
           <button 
             onClick={() => onWrongAnswer('Fazla iyimsersin, stajyerin kodlarını unuttun.')}
             className="group relative p-4 bg-slate-50 border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 rounded-xl font-mono font-medium transition-all text-slate-700 hover:text-indigo-700 text-left"
@@ -143,39 +160,38 @@ function PuzzleScreen({ onWrongAnswer, onCorrectAnswer }: { onWrongAnswer: (msg:
             D) 404 Not Found
           </button>
         </div>
+
+        {/* Hints Section */}
+        <div className="flex flex-col items-center">
+          <span className="text-sm font-medium text-slate-400 mb-4 uppercase tracking-wider">İpuçları</span>
+          <div className="flex gap-6 justify-center">
+            {hints.map((_, index) => (
+              <button 
+                key={index}
+                onClick={() => handleHintClick(index)}
+                className="group flex flex-col items-center gap-2 focus:outline-none"
+              >
+                <div className={cn(
+                  "p-3 rounded-full transition-all duration-300",
+                  activeHint === index 
+                    ? "bg-yellow-100 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]" 
+                    : "bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                )}>
+                  <Lightbulb className="w-6 h-6" />
+                </div>
+                <span className={cn(
+                  "text-xs font-semibold transition-colors duration-300",
+                  activeHint === index ? "text-yellow-600" : "text-slate-400"
+                )}>
+                  İpucu {index + 1}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
       </div>
     </motion.div>
-  );
-}
-
-// --- ACCORDION COMPONENT ---
-function Accordion({ title, children }: { title: string, children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-slate-800 font-medium"
-      >
-        <span>{title}</span>
-        <ChevronDown className={cn("w-5 h-5 text-slate-500 transition-transform duration-300", isOpen && "rotate-180")} />
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-4 bg-white text-slate-600 border-t border-slate-100">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }
 
