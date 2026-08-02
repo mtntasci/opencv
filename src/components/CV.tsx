@@ -44,7 +44,7 @@ export default function CV() {
       tn.node.textContent = tn.originalText.replace(/\S/g, () => Math.floor(Math.random() * 10).toString());
     });
 
-    const totalDuration = 9000;
+    const totalDuration = 6000;
     const start = performance.now();
     let animationFrameId: number;
 
